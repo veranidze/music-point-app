@@ -237,7 +237,7 @@
 
             // Раскомментируйте этот блок для работы с реальным API
             /*
-            const backendUrl = `http://127.0.0.1:8000/api/events?calendar_id=${encodeURIComponent(currentPoint.calendarId)}&year=${year}&month=${month + 1}`;
+            const backendUrl = `/api/events?calendar_id=${encodeURIComponent(currentPoint.calendarId)}&year=${year}&month=${month + 1}`;
             try {
                 const response = await fetch(backendUrl);
                 if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
