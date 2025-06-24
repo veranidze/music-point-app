@@ -9,31 +9,22 @@ from googleapiclient.errors import HttpError
 from datetime import datetime, timedelta
 
 # --- Конфигурация ---
-# Указываем путь к файлу с учетными данными сервисного аккаунта
-SERVICE_ACCOUNT_FILE = 'service-account-credentials.json'
+import json
 
-# Указываем "области" доступа. Нам нужен доступ только для чтения календаря.
-SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
+# ...
 
-# --- Инициализация FastAPI приложения ---
-app = FastAPI()
-
-# Настройка CORS, чтобы наш фронтенд мог делать запросы к бэкенду.
-# В реальном проекте origins лучше ограничить конкретным доменом.
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],  # Разрешаем все источники
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-# --- Логика работы с Google Calendar API ---
 def get_calendar_service():
     """Создает и возвращает авторизованный объект для работы с Calendar API."""
     try:
-        creds = service_account.Credentials.from_service_account_file(
-            SERVICE_ACCOUNT_FILE, scopes=SCOPES)
+        # Читаем секретные данные из переменной окружения
+        creds_json_str = os.environ.get('GOOGLE_CREDENTIALS_JSON')
+        if not creds_json_str:
+            raise ValueError("Переменная окружения GOOGLE_CREDENTIALS_JSON не найдена.")
+
+        creds_info = json.loads(creds_json_str)
+        creds = service_account.Credentials.from_service_account_info(
+            creds_info, scopes=SCOPES)
+
         service = build('calendar', 'v3', credentials=creds)
         return service
     except FileNotFoundError:
