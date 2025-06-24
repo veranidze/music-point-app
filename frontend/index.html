@@ -198,49 +198,19 @@
         
         async function fetchCalendarData(year, month) {
             const gridWrapper = document.getElementById('calendar-grid-wrapper');
-            // Раскомментируйте, когда будете использовать реальный API
-            /*
-            if (GOOGLE_API_KEY === 'YOUR_GOOGLE_API_KEY' || !currentPoint.calendarId || currentPoint.calendarId.startsWith('ID_КАЛЕНДАРЯ')) {
-                showToast('API ключ или ID календаря не настроены');
-                renderCalendar(year, month, {});
-                return;
-            }
-            */
+            const backendUrl = `http://127.0.0.1:8000/api/events?calendar_id=${encodeURIComponent(currentPoint.calendarId)}&year=${year}&month=${month + 1}`;
+
+            // Раскомментируйте эту строку, когда будете готовы к развертыванию на Vercel
+            // const backendUrl = `/api/events?calendar_id=${encodeURIComponent(currentPoint.calendarId)}&year=${year}&month=${month + 1}`;
+
             gridWrapper.innerHTML = '<div class="flex justify-center items-center h-full"><div class="loader"></div></div>';
-            
-            // Закомментируйте или удалите этот блок, когда будете использовать реальный API
-            await new Promise(resolve => setTimeout(resolve, 500)); 
-            const mockBookings = {};
-            const daysInMonth = new Date(year, month + 1, 0).getDate();
-            const names = ["Александр К.", "Eka K.", "Георгий & группа", "Liza S.", "Репетиция The Band", "John Doe"];
-            for (let day = 1; day <= daysInMonth; day++) {
-                if (Math.random() > 0.6) continue;
-                const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                mockBookings[dateStr] = [];
-                const numBookings = Math.floor(Math.random() * 8) + 1;
-                for (let i = 0; i < numBookings; i++) {
-                    const startHour = Math.floor(Math.random() * (21 - 10)) + 10;
-                    const duration = Math.floor(Math.random() * 2) + 1;
-                    const endHour = startHour + duration;
-                    const newBooking = {
-                        startTime: `${String(startHour).padStart(2, '0')}:00`,
-                        endTime: `${String(endHour).padStart(2, '0')}:00`,
-                        occupant: names[Math.floor(Math.random() * names.length)]
-                    };
-                    const isOverlapping = mockBookings[dateStr].some(b => parseInt(b.startTime) < endHour && parseInt(b.endTime) > startHour);
-                    if (!isOverlapping) mockBookings[dateStr].push(newBooking);
-                }
-                mockBookings[dateStr].sort((a,b) => parseInt(a.startTime) - parseInt(b.startTime));
-            }
-            renderCalendar(year, month, mockBookings);
 
-
-            // Раскомментируйте этот блок для работы с реальным API
-            /*
-            const backendUrl = `/api/events?calendar_id=${encodeURIComponent(currentPoint.calendarId)}&year=${year}&month=${month + 1}`;
             try {
                 const response = await fetch(backendUrl);
-                if (!response.ok) throw new Error(`Backend Error: ${response.statusText}`);
+                if (!response.ok) {
+                    const errorData = await response.json().catch(() => ({ detail: response.statusText }));
+                    throw new Error(errorData.detail);
+                }
                 const data = await response.json();
                 
                 const bookings = {};
@@ -249,6 +219,7 @@
                     
                     const startDateObj = new Date(event.start.dateTime);
                     const endDateObj = new Date(event.end.dateTime);
+                    
                     const dateStr = `${startDateObj.getFullYear()}-${String(startDateObj.getMonth() + 1).padStart(2, '0')}-${String(startDateObj.getDate()).padStart(2, '0')}`;
                     
                     if (!bookings[dateStr]) bookings[dateStr] = [];
@@ -263,10 +234,9 @@
 
             } catch (error) {
                 console.error('Failed to fetch calendar data:', error);
-                showToast('Не удалось загрузить расписание');
+                showToast(`Ошибка: ${error.message}`);
                 renderCalendar(year, month, {});
             }
-            */
         }
 
         function renderCalendar(year, month, bookings) {
